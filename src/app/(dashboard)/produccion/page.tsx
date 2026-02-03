@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Sprout, Tractor, Leaf, Scale } from "lucide-react"
+import { Sprout, Tractor, Leaf, Scale, Thermometer } from "lucide-react"
 
 const modules = [
     {
@@ -29,6 +29,13 @@ const modules = [
         description: "Registro de cortes, clases y rendimiento.",
         href: "/produccion/cosecha",
         icon: Scale,
+        active: true,
+    },
+    {
+        title: "Curado",
+        description: "Gestión de estufas y procesos de secado.",
+        href: "/produccion/curado",
+        icon: Thermometer,
         active: true,
     },
 ]

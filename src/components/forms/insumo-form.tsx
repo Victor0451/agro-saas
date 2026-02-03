@@ -62,6 +62,8 @@ export function InsumoForm({ onSuccess }: InsumoFormProps) {
         handleSubmit,
         control,
         reset,
+        watch,
+        setValue,
         formState: { errors },
     } = useForm<InsumoFormValues>({
         resolver: zodResolver(insumoSchema),
@@ -70,8 +72,29 @@ export function InsumoForm({ onSuccess }: InsumoFormProps) {
             unidad: "unidades",
             costo_unitario: 0,
             stock_actual: 0,
+            moneda: "ARS",
+            tipo_cambio: 1,
+            fecha_compra: new Date(),
         },
     })
+
+    const selectedMoneda = watch("moneda")
+
+    useEffect(() => {
+        if (selectedMoneda === "USD") {
+            // Fetch Dolar Blue rate
+            fetch("https://dolarapi.com/v1/dolares/blue")
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.venta) {
+                        setValue("tipo_cambio", data.venta)
+                    }
+                })
+                .catch(err => console.error("Error fetching rate", err))
+        } else {
+            setValue("tipo_cambio", 1)
+        }
+    }, [selectedMoneda, setValue])
 
     async function onSubmit(data: InsumoFormValues) {
         setIsSubmitting(true)
@@ -109,40 +132,51 @@ export function InsumoForm({ onSuccess }: InsumoFormProps) {
             </CardHeader>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="categoria">Categoría</Label>
-                        <Controller
-                            name="categoria_id"
-                            control={control}
-                            render={({ field }) => (
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <SelectTrigger id="categoria">
-                                        <SelectValue placeholder={loadingCats ? "Cargando..." : "Selecciona una categoría"} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categorias.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.id}>
-                                                {cat.nombre}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="categoria">Categoría</Label>
+                            <Controller
+                                name="categoria_id"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <SelectTrigger id="categoria">
+                                            <SelectValue placeholder={loadingCats ? "Cargando..." : "Selecciona una categoría"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categorias.map((cat) => (
+                                                <SelectItem key={cat.id} value={cat.id}>
+                                                    {cat.nombre}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.categoria_id && (
+                                <p className="text-sm text-red-500">{errors.categoria_id.message}</p>
                             )}
-                        />
-                        {errors.categoria_id && (
-                            <p className="text-sm text-red-500">{errors.categoria_id.message}</p>
-                        )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="nombre">Nombre del Insumo</Label>
+                            <Input id="nombre" {...register("nombre")} placeholder="Ej: Urea Granulada" />
+                            {errors.nombre && (
+                                <p className="text-sm text-red-500">{errors.nombre.message}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="fecha_compra">Fecha de Compra</Label>
+                            <Input
+                                id="fecha_compra"
+                                type="date"
+                                {...register("fecha_compra")}
+                            />
+                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="nombre">Nombre del Insumo</Label>
-                        <Input id="nombre" {...register("nombre")} placeholder="Ej: Urea Granulada" />
-                        {errors.nombre && (
-                            <p className="text-sm text-red-500">{errors.nombre.message}</p>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="unidad">Unidad</Label>
                             <Controller
@@ -182,14 +216,56 @@ export function InsumoForm({ onSuccess }: InsumoFormProps) {
                                 {...register("stock_actual")}
                             />
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="costo">Costo Unit. ($)</Label>
+                            <Label>Moneda</Label>
+                            <Controller
+                                name="moneda"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Moneda" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ARS">Pesos (ARS)</SelectItem>
+                                            <SelectItem value="USD">Dólar (USD)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="costo">Costo Unit.</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                                    {selectedMoneda === 'USD' ? 'US$' : '$'}
+                                </span>
+                                <Input
+                                    id="costo"
+                                    type="number"
+                                    step="0.01"
+                                    className="pl-9"
+                                    {...register("costo_unitario")}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="tipo_cambio">Tipo de Cambio</Label>
                             <Input
-                                id="costo"
+                                id="tipo_cambio"
                                 type="number"
                                 step="0.01"
-                                {...register("costo_unitario")}
+                                {...register("tipo_cambio")}
+                                disabled={selectedMoneda === 'ARS'}
                             />
+                            {selectedMoneda === 'USD' && (
+                                <p className="text-[10px] text-muted-foreground">Cotización Blue autom.</p>
+                            )}
                         </div>
                     </div>
 

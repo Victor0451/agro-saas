@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { CultivoForm } from "@/components/forms/cultivo-form"
-import { CultivoHistory } from "@/components/cultivo-history"
+import { LaborManager } from "@/components/labor-manager"
 import {
     Card,
     CardContent,
@@ -22,12 +21,17 @@ export default async function CultivoPage() {
             *,
             lote:lotes(nombre),
             detalles:labores_insumos(
+                insumo_id,
                 cantidad,
                 insumo:insumos(nombre, unidad)
+            ),
+            personal:labores_personal(
+                personal_id,
+                dias_trabajados,
+                personal:personal(nombre)
             )
         `)
         .order('fecha', { ascending: false })
-        .limit(50)
 
     return (
         <div className="space-y-6">
@@ -40,29 +44,7 @@ export default async function CultivoPage() {
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                <div className="lg:col-span-3">
-                    <Card className="h-full border-indigo-100 dark:border-indigo-900/20">
-                        <CardHeader className="bg-indigo-50/50 dark:bg-indigo-900/10">
-                            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 mb-2">
-                                <Activity className="h-5 w-5" />
-                                <span className="text-sm font-semibold uppercase tracking-wider">Nueva Actividad</span>
-                            </div>
-                            <CardTitle>Registrar Labor</CardTitle>
-                            <CardDescription>
-                                Asigna tareas a lotes e imputa consumo de insumos/jornales.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <CultivoForm />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="lg:col-span-4">
-                    <CultivoHistory history={history || []} />
-                </div>
-            </div>
+            <LaborManager history={history || []} />
         </div>
     )
 }

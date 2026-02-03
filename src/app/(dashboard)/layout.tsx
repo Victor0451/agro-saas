@@ -7,6 +7,7 @@ import {
     Package2,
     ShoppingCart,
     Users,
+    DollarSign,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -90,6 +91,13 @@ export default function DashboardLayout({
                                 >
                                     <Users className="h-4 w-4" />
                                     Personal
+                                </Link>
+                                <Link
+                                    href="/personal/liquidacion"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                >
+                                    <DollarSign className="h-4 w-4" />
+                                    Liquidaciones
                                 </Link>
                                 <Link
                                     href="/reportes"

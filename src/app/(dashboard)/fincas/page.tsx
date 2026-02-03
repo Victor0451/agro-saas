@@ -105,9 +105,9 @@ export default function FincasPage() {
 
             {/* Plan Usage Section */}
             <div className="grid gap-4 md:grid-cols-4">
-                <Card className="md:col-span-3 border-l-4 border-l-primary shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                <Card className="md:col-span-3 border-l-4 border-l-indigo-500 shadow-sm border-indigo-100 dark:border-indigo-900/20">
+                    <CardHeader className="pb-2 bg-indigo-50/50 dark:bg-indigo-900/10">
+                        <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
                             Estado de Suscripción: {tenant.plan_type}
                         </CardTitle>
                     </CardHeader>
@@ -141,7 +141,7 @@ export default function FincasPage() {
             </div>
 
             {(showForm || editingFinca) && (
-                <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 fade-in duration-300 border p-6 rounded-lg bg-background shadow-lg relative z-10">
+                <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 fade-in duration-300 border border-indigo-100 dark:border-indigo-900/20 p-6 rounded-lg bg-background shadow-lg relative z-10">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold">{editingFinca ? "Editar Finca" : "Registrar Nuevo Establecimiento"}</h3>
                         <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setEditingFinca(null); }}>Cerrar</Button>
@@ -161,16 +161,16 @@ export default function FincasPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* ... loading / empty states ... */}
                 {fincas.map((finca) => (
-                    <Card key={finca.id} className="group hover:shadow-md transition-all duration-300 overflow-hidden border-muted">
+                    <Card key={finca.id} className="group hover:shadow-md transition-all duration-300 overflow-hidden border-indigo-100 dark:border-indigo-900/20">
                         {/* ... Card content ... */}
-                        <div className="h-32 bg-gradient-to-r from-emerald-600/10 to-teal-600/10 flex items-center justify-center relative">
-                            <MapPin className="h-10 w-10 text-emerald-600/40 group-hover:scale-110 transition-transform duration-300" />
+                        <div className="h-32 bg-gradient-to-r from-indigo-600/10 to-blue-600/10 flex items-center justify-center relative">
+                            <MapPin className="h-10 w-10 text-indigo-600/40 group-hover:scale-110 transition-transform duration-300" />
                             <Badge className="absolute top-3 right-3 bg-background/80 text-foreground backdrop-blur-sm shadow-sm hover:bg-background/90" variant="outline">
                                 Activa
                             </Badge>
                         </div>
-                        <CardHeader>
-                            <CardTitle className="flex items-center justify-between">
+                        <CardHeader className="bg-indigo-50/50 dark:bg-indigo-900/10 border-b border-indigo-100 dark:border-indigo-900/20">
+                            <CardTitle className="flex items-center justify-between text-indigo-700 dark:text-indigo-400">
                                 {finca.nombre}
                             </CardTitle>
                             <CardDescription className="flex items-center gap-1">

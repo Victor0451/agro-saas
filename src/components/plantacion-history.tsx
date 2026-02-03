@@ -20,6 +20,9 @@ interface PlantacionHistoryItem {
     variedad?: string
     cantidad_plantas: number
     superficie_cubierta?: number
+    costo_total?: number
+    moneda?: string
+    tipo_cambio?: number
     lote?: {
         nombre: string
     }
@@ -36,6 +39,14 @@ export function PlantacionHistory({ history }: PlantacionHistoryProps) {
     const filteredHistory = activeFincaId
         ? history.filter((item) => item.finca_id === activeFincaId)
         : []
+
+    const formatCurrency = (amount: number, currency: string) => {
+        return new Intl.NumberFormat('es-AR', {
+            style: 'currency',
+            currency: currency === 'USD' ? 'USD' : 'ARS',
+            minimumFractionDigits: 2
+        }).format(amount)
+    }
 
     return (
         <Card className="h-full">
@@ -57,6 +68,7 @@ export function PlantacionHistory({ history }: PlantacionHistoryProps) {
                             <TableHead>Lote</TableHead>
                             <TableHead>Variedad</TableHead>
                             <TableHead className="text-right">Plantas</TableHead>
+                            <TableHead className="text-right">Costo Total</TableHead>
                             <TableHead className="text-right">Sup.</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -74,6 +86,18 @@ export function PlantacionHistory({ history }: PlantacionHistoryProps) {
                                     </TableCell>
                                     <TableCell>{item.variedad}</TableCell>
                                     <TableCell className="text-right font-bold">{item.cantidad_plantas}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex flex-col items-end">
+                                            <span className="font-medium">
+                                                {formatCurrency(item.costo_total || 0, item.moneda || 'ARS')}
+                                            </span>
+                                            {item.moneda === 'USD' && (
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    ~ {formatCurrency((item.costo_total || 0) * (item.tipo_cambio || 1), 'ARS')}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="text-right text-muted-foreground">
                                         {item.superficie_cubierta ? `${item.superficie_cubierta} ha` : '-'}
                                     </TableCell>
@@ -81,7 +105,7 @@ export function PlantacionHistory({ history }: PlantacionHistoryProps) {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                                     {activeFincaId
                                         ? "No hay registros de plantación en esta finca."
                                         : "Seleccione una finca para ver el avance."

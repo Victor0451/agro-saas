@@ -44,9 +44,9 @@ export default async function AlmacigosPage() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
                 <div className="lg:col-span-3">
-                    <Card className="h-full">
-                        <CardHeader>
-                            <CardTitle>Nueva Siembra</CardTitle>
+                    <Card className="h-full border-indigo-100 dark:border-indigo-900/20">
+                        <CardHeader className="bg-indigo-50/50 dark:bg-indigo-900/10 border-b border-indigo-100 dark:border-indigo-900/20">
+                            <CardTitle className="text-indigo-700 dark:text-indigo-400">Nueva Siembra</CardTitle>
                             <CardDescription>
                                 Registra la siembra y descuenta materiales automáticamente.
                             </CardDescription>

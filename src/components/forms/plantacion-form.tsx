@@ -78,6 +78,26 @@ export function PlantacionForm({ onSuccess }: PlantacionFormProps) {
         },
     })
 
+    const selectedMoneda = form.watch("moneda")
+    const [fetchingRate, setFetchingRate] = useState(false)
+
+    useEffect(() => {
+        if (selectedMoneda === "USD") {
+            setFetchingRate(true)
+            fetch("https://dolarapi.com/v1/dolares/blue")
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.venta) {
+                        form.setValue("tipo_cambio", data.venta)
+                    }
+                })
+                .catch(err => console.error("Error fetching rate", err))
+                .finally(() => setFetchingRate(false))
+        } else {
+            form.setValue("tipo_cambio", 1)
+        }
+    }, [selectedMoneda, form])
+
     // Sync hidden finca_id
     useEffect(() => {
         if (activeFincaId) form.setValue("finca_id", activeFincaId)
@@ -99,7 +119,10 @@ export function PlantacionForm({ onSuccess }: PlantacionFormProps) {
                 fecha: format(new Date(), "yyyy-MM-dd"),
                 variedad: "",
                 cantidad_plantas: 0,
-                bandejas_usadas: 0
+                bandejas_usadas: 0,
+                costo_total: 0,
+                moneda: "ARS",
+                tipo_cambio: 1
             })
             router.refresh()
             if (onSuccess) onSuccess()

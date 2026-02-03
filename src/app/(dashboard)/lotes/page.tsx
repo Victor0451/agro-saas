@@ -69,7 +69,10 @@ export default function LotesPage() {
             </div>
 
             {showForm && (
-                <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 fade-in duration-300">
+                <div className="max-w-2xl mx-auto animate-in slide-in-from-top-4 fade-in duration-300 border border-indigo-100 dark:border-indigo-900/20 p-6 rounded-lg bg-background shadow-lg items-center relative z-10">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-400">Registrar Nuevo Lote</h3>
+                    </div>
                     <LoteForm onSuccess={() => {
                         setShowForm(false)
                         fetchLotes()
@@ -77,7 +80,7 @@ export default function LotesPage() {
                 </div>
             )}
 
-            <div className="border rounded-lg bg-card">
+            <div className="border border-indigo-100 dark:border-indigo-900/20 rounded-lg bg-card shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>

@@ -14,6 +14,8 @@ export const plantacionSchema = z.object({
     superficie_cubierta: z.coerce.number().min(0).optional(),
     jornales_usados: z.coerce.number().min(0).optional(),
     costo_total: z.coerce.number().min(0).optional(),
+    moneda: z.enum(['ARS', 'USD']).default('ARS'),
+    tipo_cambio: z.coerce.number().positive().default(1),
     observaciones: z.string().optional(),
 })
 
