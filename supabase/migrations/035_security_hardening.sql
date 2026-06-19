@@ -353,3 +353,91 @@ DROP FUNCTION IF EXISTS public.registrar_plantacion(
 );
 
 -- =============================================================================
+-- SECTION 5: Rewrite registrar_almacigo with derived stock (Task 5)
+-- =============================================================================
+
+-- Full rewrite per design.md. Signature preserved (no caller changes).
+-- Body: tenant guard -> SERIALIZABLE -> derived stock check -> INSERT.
+-- Uses errcode 23514 (check_violation) for insufficient stock, not 42501.
+CREATE OR REPLACE FUNCTION public.registrar_almacigo(
+    p_tenant_id          uuid,
+    p_finca_id           uuid,
+    p_fecha              date,
+    p_variedad           varchar,
+    p_cantidad_bandejas  integer,
+    p_insumo_semilla_id  uuid,
+    p_semilla_usada      decimal,
+    p_insumo_sustrato_id uuid,
+    p_sustrato_usado     decimal,
+    p_observaciones      text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_new_id         uuid;
+    v_stock_semilla  decimal;
+    v_stock_sustrato decimal;
+BEGIN
+    -- 1. Tenant guard (raises 42501 on mismatch)
+    PERFORM public.assert_caller_tenant(p_tenant_id);
+
+    -- 2. SERIALIZABLE: prevents double-spend on concurrent sows
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+    -- 3. Derived stock for semilla
+    --    available = purchases - previous almacigo consumption - labor consumption
+    SELECT
+        COALESCE((SELECT SUM(cantidad) FROM public.compras_insumos
+                   WHERE insumo_id = p_insumo_semilla_id AND tenant_id = p_tenant_id), 0)
+      - COALESCE((SELECT SUM(semilla_usada) FROM public.almacigos
+                   WHERE insumo_semilla_id = p_insumo_semilla_id AND tenant_id = p_tenant_id), 0)
+      - COALESCE((SELECT SUM(li.cantidad) FROM public.labores_insumos li
+                   JOIN public.labores l ON l.id = li.labor_id
+                   WHERE li.insumo_id = p_insumo_semilla_id AND l.tenant_id = p_tenant_id), 0)
+      INTO v_stock_semilla;
+
+    IF v_stock_semilla IS NULL OR v_stock_semilla < p_semilla_usada THEN
+        RAISE EXCEPTION 'insufficient_stock_semilla: disponible %, requerido %',
+            COALESCE(v_stock_semilla, 0), p_semilla_usada
+            USING ERRCODE = '23514';
+    END IF;
+
+    -- 4. Derived stock for sustrato (only when provided and > 0)
+    IF p_insumo_sustrato_id IS NOT NULL AND p_sustrato_usado > 0 THEN
+        SELECT
+            COALESCE((SELECT SUM(cantidad) FROM public.compras_insumos
+                       WHERE insumo_id = p_insumo_sustrato_id AND tenant_id = p_tenant_id), 0)
+          - COALESCE((SELECT SUM(sustrato_usado) FROM public.almacigos
+                       WHERE insumo_sustrato_id = p_insumo_sustrato_id AND tenant_id = p_tenant_id), 0)
+          - COALESCE((SELECT SUM(li.cantidad) FROM public.labores_insumos li
+                       JOIN public.labores l ON l.id = li.labor_id
+                       WHERE li.insumo_id = p_insumo_sustrato_id AND l.tenant_id = p_tenant_id), 0)
+          INTO v_stock_sustrato;
+
+        IF v_stock_sustrato IS NULL OR v_stock_sustrato < p_sustrato_usado THEN
+            RAISE EXCEPTION 'insufficient_stock_sustrato: disponible %, requerido %',
+                COALESCE(v_stock_sustrato, 0), p_sustrato_usado
+                USING ERRCODE = '23514';
+        END IF;
+    END IF;
+
+    -- 5. Insert — the almacigos row IS the consumption record (no separate ledger)
+    INSERT INTO public.almacigos (
+        tenant_id, finca_id, fecha, variedad, cantidad_bandejas,
+        insumo_semilla_id, semilla_usada,
+        insumo_sustrato_id, sustrato_usado,
+        observaciones
+    ) VALUES (
+        p_tenant_id, p_finca_id, p_fecha, p_variedad, p_cantidad_bandejas,
+        p_insumo_semilla_id, p_semilla_usada,
+        p_insumo_sustrato_id, p_sustrato_usado,
+        p_observaciones
+    )
+    RETURNING id INTO v_new_id;
+
+    RETURN jsonb_build_object('id', v_new_id, 'success', true);
+END;
+$$;
