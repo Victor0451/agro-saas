@@ -1,0 +1,14 @@
+change: security-hardening
+status: applied
+created: 2026-06-19
+applied_at: 2026-06-19
+preflight:
+  artifact_store: both
+  delivery_strategy: ask-always
+  review_budget: 400
+artifacts:
+  proposal: openspec/changes/security-hardening/proposal.md
+  spec: openspec/changes/security-hardening/specs/multi-tenant-rpc-guards/spec.md
+  design: openspec/changes/security-hardening/design.md
+  tasks: openspec/changes/security-hardening/tasks.md
+next_recommended: verify
