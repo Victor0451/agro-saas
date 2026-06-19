@@ -276,3 +276,61 @@ BEGIN
     ORDER BY c.nombre;
 END;
 $$;
+-- SECTION 3: Patch create_owner_tenant with strict guard (Task 3)
+-- =============================================================================
+
+-- Patched: added PERFORM public.assert_caller_has_no_tenant() as first
+-- executable statement. Body otherwise identical to migration 029.
+CREATE OR REPLACE FUNCTION public.create_owner_tenant(
+    tenant_name text,
+    finca_name  text,
+    superficie  numeric DEFAULT 0,
+    rendimiento numeric DEFAULT 0
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    new_tenant_id uuid;
+    new_user_id   uuid;
+    slug_base     text;
+    final_slug    text;
+BEGIN
+    -- Tenant guard: reject users who already have a tenant (raises 42501)
+    PERFORM public.assert_caller_has_no_tenant();
+
+    -- 1. Generate slug
+    slug_base  := lower(regexp_replace(tenant_name, '[^a-zA-Z0-9]', '-', 'g'));
+    final_slug := slug_base || '-' || floor(random() * 1000)::text;
+
+    -- 2. Create tenant
+    INSERT INTO tenants (nombre, slug, activo)
+    VALUES (tenant_name, final_slug, true)
+    RETURNING id INTO new_tenant_id;
+
+    -- 3. Get current user
+    new_user_id := auth.uid();
+
+    -- 4. Assign user to tenant as admin
+    UPDATE usuarios
+    SET tenant_id = new_tenant_id,
+        rol       = 'admin'
+    WHERE id = new_user_id;
+
+    -- 5. Create first farm
+    INSERT INTO fincas (nombre, tenant_id, superficie_total, rendimiento_esperado)
+    VALUES (finca_name, new_tenant_id, superficie, rendimiento);
+
+    -- 6. Seed tenant catalog from global template
+    PERFORM seed_tenant_insumos(new_tenant_id);
+
+    RETURN json_build_object(
+        'tenant_id', new_tenant_id,
+        'message',   'Tenant, farm and catalog seeded successfully'
+    );
+END;
+$$;
+
+-- =============================================================================
