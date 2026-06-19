@@ -334,3 +334,22 @@ END;
 $$;
 
 -- =============================================================================
+-- SECTION 4: Drop orphaned registrar_plantacion (Task 4)
+-- =============================================================================
+
+-- Confirmed orphaned: zero callers in src/. plantaciones are written via
+-- direct INSERT in src/app/api/produccion/plantaciones/route.ts.
+DROP FUNCTION IF EXISTS public.registrar_plantacion(
+    uuid,  -- p_tenant_id
+    uuid,  -- p_finca_id
+    uuid,  -- p_lote_id
+    date,  -- p_fecha
+    varchar,  -- p_variedad
+    uuid,  -- p_almacigo_id
+    integer,  -- p_cantidad_plantas
+    integer,  -- p_bandejas_usadas
+    decimal,  -- p_superficie_cubierta
+    text  -- p_observaciones
+);
+
+-- =============================================================================
