@@ -1,0 +1,32 @@
+schema: spec-driven
+
+context: |
+  AgroERP — Multi-tenant agricultural SaaS ERP for intensive crop producers (tobacco).
+  Stack: Next.js 16 (App Router) + React 19 RC + Supabase (PostgreSQL 17) + Tailwind 3 + Shadcn UI + Zod + Recharts + date-fns.
+  Auth: Supabase Auth + custom JWT hook (migration 033 — tenant claim injection).
+  34 Supabase migrations applied (001..034). Hosting: Vercel.
+  Multi-tenancy: row-level security on Supabase, tenant_id claim in JWT.
+  Obsidian vault at /run/media/vlongo/Archivos/obsidian/Projectos/AGRO-SAAS/ is source of truth for human docs.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing code patterns
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
