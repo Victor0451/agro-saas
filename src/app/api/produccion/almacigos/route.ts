@@ -93,10 +93,18 @@ export async function POST(request: Request) {
         if (error instanceof ZodError) {
             return NextResponse.json({ error: error.errors }, { status: 400 })
         }
-        // Handle Custom Exceptions from DB (e.g. "Stock insuficiente")
+        // Handle Custom Exceptions from DB (e.g. "Stock insuficiente", "insufficient_stock_*")
         const message = error instanceof Error ? error.message : "Error desconocido"
-        if (message.includes('Stock insuficiente')) {
-            return NextResponse.json({ error: message }, { status: 409 }) // Conflict
+        const code = (error as { code?: string }).code
+        if (code === '40001' || message.includes('insufficient_stock') || message.includes('Stock insuficiente')) {
+            return NextResponse.json(
+                {
+                    error: code === '40001'
+                        ? 'Conflicto de stock con siembra simultanea, reintentar'
+                        : message
+                },
+                { status: 409 }
+            )
         }
         return NextResponse.json({ error: message }, { status: 500 })
     }
