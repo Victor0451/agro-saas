@@ -1,0 +1,14 @@
+change: workflow-foundations
+status: applied
+created: 2026-06-23
+preflight:
+  artifact_store: both
+  delivery_strategy: ask-always
+  review_budget: 400
+artifacts:
+  proposal: openspec/changes/workflow-foundations/proposal.md
+  spec: openspec/changes/workflow-foundations/specs/workflow-breadcrumb/spec.md
+        + openspec/changes/workflow-foundations/specs/insumo-stock-derivation/spec.md
+  design: openspec/changes/workflow-foundations/design.md
+  tasks: openspec/changes/workflow-foundations/tasks.md
+next_recommended: verify
