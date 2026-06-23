@@ -1,0 +1,17 @@
+change: workflow-foundations
+status: archived
+created: 2026-06-23
+verified_at: 2026-06-23
+verified_by: sdd-verify
+archived_at: 2026-06-19
+preflight:
+  artifact_store: both
+  delivery_strategy: ask-always
+  review_budget: 400
+artifacts:
+  proposal: openspec/changes/archive/workflow-foundations/proposal.md
+  spec: openspec/changes/archive/workflow-foundations/specs/workflow-breadcrumb/spec.md
+        + openspec/changes/archive/workflow-foundations/specs/insumo-stock-derivation/spec.md
+  design: openspec/changes/archive/workflow-foundations/design.md
+  tasks: openspec/changes/archive/workflow-foundations/tasks.md
+next_recommended: null
