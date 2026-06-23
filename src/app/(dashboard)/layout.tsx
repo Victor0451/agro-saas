@@ -25,6 +25,7 @@ import { Menu } from "lucide-react"
 
 import { FincaProvider } from "@/contexts/finca-context"
 import { FincaSwitcher } from "@/components/finca-switcher"
+import { Breadcrumb } from "@/components/breadcrumb"
 
 export default function DashboardLayout({
     children,
@@ -99,13 +100,13 @@ export default function DashboardLayout({
                                     <DollarSign className="h-4 w-4" />
                                     Liquidaciones
                                 </Link>
-                                <Link
-                                    href="/reportes"
-                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                <span
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground/50 cursor-not-allowed"
+                                    aria-disabled="true"
                                 >
                                     <LineChart className="h-4 w-4" />
-                                    Reportes
-                                </Link>
+                                    Reportes · próximamente
+                                </span>
                             </nav>
                         </div>
                         <div className="mt-auto p-4">
@@ -162,6 +163,13 @@ export default function DashboardLayout({
                                         <ShoppingCart className="h-5 w-5" />
                                         Mis Fincas
                                     </Link>
+                                    <span
+                                        className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground/50 cursor-not-allowed"
+                                        aria-disabled="true"
+                                    >
+                                        <LineChart className="h-5 w-5" />
+                                        Reportes · próximamente
+                                    </span>
                                 </nav>
                                 <div className="mt-auto">
                                 </div>
@@ -174,6 +182,7 @@ export default function DashboardLayout({
                         </div>
                     </header>
                     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/10">
+                        <Breadcrumb />
                         {children}
                     </main>
                 </div>

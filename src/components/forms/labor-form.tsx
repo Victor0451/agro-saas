@@ -45,9 +45,10 @@ interface LaborFormProps {
     onSuccess?: () => void;
     initialData?: any;
     onCancel?: () => void;
+    stockByInsumo?: Record<string, { stock: number; unidad: string }>;
 }
 
-export function LaborForm({ onSuccess, initialData, onCancel }: LaborFormProps) {
+export function LaborForm({ onSuccess, initialData, onCancel, stockByInsumo = {} }: LaborFormProps) {
     const router = useRouter()
     const { activeFincaId } = useFinca()
     const [loading, setLoading] = useState(false)
@@ -491,7 +492,7 @@ export function LaborForm({ onSuccess, initialData, onCancel }: LaborFormProps) 
                                                 <SelectContent>
                                                     {insumosList.map(i => (
                                                         <SelectItem key={i.id} value={i.id}>
-                                                            {i.nombre} ({i.stock_actual} {i.unidad})
+                                                            {i.nombre} ({i.unidad})
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -503,13 +504,22 @@ export function LaborForm({ onSuccess, initialData, onCancel }: LaborFormProps) 
                             <FormField
                                 control={form.control}
                                 name={`insumos.${index}.cantidad`}
-                                render={({ field }) => (
-                                    <FormItem className="w-24">
-                                        <FormControl>
-                                            <Input type="number" placeholder="Cant." step="0.01" {...field} value={field.value ?? ''} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
+                                render={({ field }) => {
+                                    const selectedInsumoId = form.watch(`insumos.${index}.insumo_id`)
+                                    const stockData = selectedInsumoId ? stockByInsumo[selectedInsumoId] : null
+                                    return (
+                                        <FormItem className="w-24">
+                                            <FormControl>
+                                                <Input type="number" placeholder="Cant." step="0.01" {...field} value={field.value ?? ''} />
+                                            </FormControl>
+                                            {stockData && (
+                                                <p className="text-[10px] text-muted-foreground mt-1">
+                                                    Stock actual: {stockData.stock.toFixed(2)} {stockData.unidad}
+                                                </p>
+                                            )}
+                                        </FormItem>
+                                    )
+                                }}
                             />
                             <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />

@@ -17,9 +17,10 @@ import { useFinca } from "@/contexts/finca-context"
 
 interface LaborManagerProps {
     history: any[]
+    stockByInsumo: Record<string, { stock: number; unidad: string }>
 }
 
-export function LaborManager({ history }: LaborManagerProps) {
+export function LaborManager({ history, stockByInsumo }: LaborManagerProps) {
     const [selectedLabor, setSelectedLabor] = useState<any>(null)
     const { toast } = useToast()
     const router = useRouter()
@@ -127,6 +128,7 @@ export function LaborManager({ history }: LaborManagerProps) {
                             onSuccess={handleSuccess}
                             initialData={selectedLabor}
                             onCancel={handleCancelEdit}
+                            stockByInsumo={stockByInsumo}
                         />
                     </CardContent>
                 </Card>
