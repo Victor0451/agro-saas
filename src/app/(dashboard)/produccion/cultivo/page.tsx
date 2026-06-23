@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { LaborManager } from "@/components/labor-manager"
+import { calcularStock } from "@/lib/services/stock"
 import {
     Card,
     CardContent,
@@ -33,6 +34,33 @@ export default async function CultivoPage() {
         `)
         .order('fecha', { ascending: false })
 
+    // Build stockByInsumo map server-side
+    const { data: { user } } = await supabase.auth.getUser()
+    let stockByInsumo: Record<string, { stock: number; unidad: string }> = {}
+
+    if (user) {
+        const { data: userData } = await supabase
+            .from('usuarios')
+            .select('tenant_id')
+            .eq('id', user.id)
+            .single()
+
+        if (userData?.tenant_id) {
+            const { data: insumos } = await supabase
+                .from('insumos')
+                .select('id, nombre, unidad')
+                .eq('activo', true)
+                .eq('tenant_id', userData.tenant_id)
+
+            if (insumos) {
+                for (const insumo of insumos) {
+                    const stock = await calcularStock(insumo.id, userData.tenant_id)
+                    stockByInsumo[insumo.id] = { stock, unidad: insumo.unidad }
+                }
+            }
+        }
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -44,7 +72,7 @@ export default async function CultivoPage() {
                 </div>
             </div>
 
-            <LaborManager history={history || []} />
+            <LaborManager history={history || []} stockByInsumo={stockByInsumo} />
         </div>
     )
 }
